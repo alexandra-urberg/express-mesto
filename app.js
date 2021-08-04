@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+/// const path = require('path);
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -19,6 +20,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/', require('./routes/users'));
+//app.use('/', require('./routes/cards'));
 
 app.use((req, res, next) => {
   req.user = {
@@ -31,6 +33,8 @@ app.use((req, res, next) => {
 app.use('*', (req, res) => {
   res.status(404).send({ message: 'Запрашиваемый адрес не найден' });
 });
+
+/// app.use(express.static(path.join(__dirname, 'public')));
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
