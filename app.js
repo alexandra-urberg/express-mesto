@@ -15,10 +15,6 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useFindAndModify: false,
 });
 
-app.get('/', (req, res) => {
-  res.send('Hello!');
-});
-
 app.use('/', require('./routes/users'));
 app.use('/', require('./routes/cards'));
 
