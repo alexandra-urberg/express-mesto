@@ -2,34 +2,24 @@ const Card = require('../models/cards');
 
 module.exports.getCards = (req, res) => {
   Card.find({})
-    .orFail(() => {
-      const error = new Error('Неверные данные');
-      error.statusCode = 400;
-      throw error;
-    })
     .then((cards) => res.send({ data: cards }))
-    .catch((err) => {
-      if (err.statusCode === 400) {
-        res.status(err.statusCode).send({ message: err.message });
-      } else {
-        res.status(500).send({ message: 'Error!' });
-      }
+    .catch(() => {
+      res.status(500).send({ message: 'Error!' });
     });
 };
 
 module.exports.createCard = (req, res) => {
-  const { name, link } = res.body;
+  const { name, link } = req.body;
 
   Card.create({ name, link, owner: req.user._id })
-    .orFail(() => {
-      const error = new Error('Неверные данные');
-      error.statusCode = 400;
-      throw error;
-    })
     .then((card) => res.send({ data: card }))
     .catch((err) => {
-      if (err.statusCode === 400) {
-        res.status(err.statusCode).send({ message: err.message });
+      if (err.name === 'ValidationError') {
+        res.status(400).send({
+          message: `${Object.values(err.errors)
+            .map((error) => error.messaage)
+            .join(', ')}`,
+        });
       } else {
         res.status(500).send({ message: 'Error!' });
       }
@@ -54,11 +44,15 @@ module.exports.deleteCard = (req, res) => {
 };
 
 module.exports.likeCard = (req, res) => {
-  Card.findByIdAndUpdate(req.params._id,
+  Card.findByIdAndUpdate(
+    req.params._id,
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
-    { new: true })
+    { new: true },
+  )
     .orFail(() => {
-      const error = new Error('Неверные данные');
+      const error = new Error(
+        'Переданы некорректные данные для постановки/снятии лайка.',
+      );
       error.statusCode = 400;
       throw error;
     })
@@ -73,17 +67,21 @@ module.exports.likeCard = (req, res) => {
 };
 
 module.exports.dislikeCard = (req, res) => {
-  Card.findByIdAndUpdate(req.params._id,
+  Card.findByIdAndUpdate(
+    req.params._id,
     { $pull: { likes: req.user._id } }, // убрать _id из массива
-    { new: true })
+    { new: true },
+  )
     .orFail(() => {
-      const error = new Error('Неверные данные');
+      const error = new Error(
+        'Переданы некорректные данные для постановки/снятии лайка.',
+      );
       error.statusCode = 400;
       throw error;
     })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.statusCode === 404) {
+      if (err.statusCode === 400) {
         res.status(err.statusCode).send({ message: err.message });
       } else {
         res.status(500).send({ message: 'Error!' });
