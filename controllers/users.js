@@ -36,9 +36,7 @@ module.exports.createUser = (req, res) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({
-          message: `${Object.values(err.errors)
-            .map((error) => error.messaage)
-            .join(', ')}`,
+          message: err,
         });
       } else {
         res.status(500).send({ message: err.message });
@@ -49,10 +47,12 @@ module.exports.createUser = (req, res) => {
 module.exports.updateUser = (req, res) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(
-    req.params._id,
+    req.user._id,
     { name, about },
-    { new: true },
-    { runValidators: true },
+    {
+      new: true,
+      runValidators: true,
+    },
   )
     .orFail(() => {
       const error = new Error('Пользователь по заданному id отсутствует');
@@ -65,9 +65,7 @@ module.exports.updateUser = (req, res) => {
         res.status(err.statusCode).send({ message: err.message });
       } else if (err.name === 'ValidationError') {
         res.status(400).send({
-          message: `${Object.values(err.errors)
-            .map((error) => error.messaage)
-            .join(', ')}`,
+          message: err,
         });
       } else {
         res.status(500).send({ message: 'Error!' });
@@ -78,10 +76,12 @@ module.exports.updateUser = (req, res) => {
 module.exports.updateAvatar = (req, res) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(
-    req.params._id,
+    req.user._id,
     { avatar },
-    { new: true },
-    { runValidators: true },
+    {
+      new: true,
+      runValidators: true,
+    },
   )
     .orFail(() => {
       const error = new Error('Пользователь по заданному id отсутствует');
@@ -94,9 +94,7 @@ module.exports.updateAvatar = (req, res) => {
         res.status(err.statusCode).send({ message: err.message });
       } else if (err.name === 'ValidationError') {
         res.status(400).send({
-          message: `${Object.values(err.errors)
-            .map((error) => error.messaage)
-            .join(', ')}`,
+          message: err,
         });
       } else {
         res.status(500).send({ message: 'Error!' });

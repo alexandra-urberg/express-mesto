@@ -16,9 +16,7 @@ module.exports.createCard = (req, res) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({
-          message: `${Object.values(err.errors)
-            .map((error) => error.messaage)
-            .join(', ')}`,
+          message: err,
         });
       } else {
         res.status(500).send({ message: 'Error!' });
@@ -27,7 +25,7 @@ module.exports.createCard = (req, res) => {
 };
 
 module.exports.deleteCard = (req, res) => {
-  Card.findByIdAndRemove(req.params._id)
+  Card.findByIdAndRemove(req.params.cardId)
     .orFail(() => {
       const error = new Error('Карточка по заданному id отсутствует');
       error.statusCode = 404;
@@ -45,46 +43,38 @@ module.exports.deleteCard = (req, res) => {
 
 module.exports.likeCard = (req, res) => {
   Card.findByIdAndUpdate(
-    req.params._id,
+    req.params.cardId,
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true },
   )
-    .orFail(() => {
-      const error = new Error(
-        'Переданы некорректные данные для постановки/снятии лайка.',
-      );
-      error.statusCode = 400;
-      throw error;
-    })
+    .orFail.orFail(new Error(
+      'NotFound',
+    ))
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.statusCode === 400) {
+      if (err.name === 'CastError') {
         res.status(err.statusCode).send({ message: err.message });
-      } else {
-        res.status(500).send({ message: 'Error!' });
+      } else if (err.name === 'NotFound') {
+        res.status(500).send({ message: err.message });
       }
     });
 };
 
 module.exports.dislikeCard = (req, res) => {
   Card.findByIdAndUpdate(
-    req.params._id,
+    req.params.cardId,
     { $pull: { likes: req.user._id } }, // убрать _id из массива
     { new: true },
   )
-    .orFail(() => {
-      const error = new Error(
-        'Переданы некорректные данные для постановки/снятии лайка.',
-      );
-      error.statusCode = 400;
-      throw error;
-    })
+    .orFail(new Error(
+      'NotFound',
+    ))
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.statusCode === 400) {
+      if (err.name === 'CastError') {
         res.status(err.statusCode).send({ message: err.message });
-      } else {
-        res.status(500).send({ message: 'Error!' });
+      } else if (err.name === 'NotFound') {
+        res.status(500).send({ message: err.message });
       }
     });
 };

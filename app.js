@@ -15,16 +15,16 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useFindAndModify: false,
 });
 
-app.use('/', require('./routes/users'));
-app.use('/', require('./routes/cards'));
-
 app.use((req, res, next) => {
   req.user = {
-    _id: '610a02c3e425452775ab2bc3', // вставьте сюда _id созданного в предыдущем пункте пользователя
+    _id: '610a02c3e425452775ab2bc3',
   };
 
   next();
 });
+
+app.use('/', require('./routes/users'));
+app.use('/', require('./routes/cards'));
 
 app.use('*', (req, res) => {
   res.status(404).send({ message: 'Запрашиваемый адрес не найден' });
