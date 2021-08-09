@@ -36,7 +36,7 @@ module.exports.createUser = (req, res) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(400).send({
-          message: err,
+          message: err.message,
         });
       } else {
         res.status(500).send({ message: err.message });
@@ -65,7 +65,7 @@ module.exports.updateUser = (req, res) => {
         res.status(err.statusCode).send({ message: err.message });
       } else if (err.name === 'ValidationError') {
         res.status(400).send({
-          message: err,
+          message: err.message,
         });
       } else {
         res.status(500).send({ message: 'Error!' });
@@ -94,7 +94,7 @@ module.exports.updateAvatar = (req, res) => {
         res.status(err.statusCode).send({ message: err.message });
       } else if (err.name === 'ValidationError') {
         res.status(400).send({
-          message: err,
+          message: err.message,
         });
       } else {
         res.status(500).send({ message: 'Error!' });
