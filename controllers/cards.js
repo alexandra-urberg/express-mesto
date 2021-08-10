@@ -37,7 +37,9 @@ module.exports.deleteCard = (req, res) => {
         res.status(err.statusCode).send({ message: err.message });
       } else if (err.name === 'CastError') {
         res.status(400).send({ message: err.message });
-      } res.status(500).send({ message: 'Error!' });
+      } else {
+        res.status(500).send({ message: 'Error!' });
+      }
     });
 };
 
@@ -56,7 +58,9 @@ module.exports.likeCard = (req, res) => {
         res.status(400).send({ message: err.message });
       } else if (err.message === 'NotFound') {
         res.status(404).send({ message: err.message });
-      } res.status(500).send({ message: err.message });
+      } else {
+        res.status(500).send({ message: err.message });
+      }
     });
 };
 
@@ -75,6 +79,8 @@ module.exports.dislikeCard = (req, res) => {
         res.status(400).send({ message: err.message });
       } else if (err.message === 'NotFound') {
         res.status(404).send({ message: err.message });
-      } res.status(500).send({ message: err.message });
+      } else {
+        res.status(500).send({ message: err.message });
+      }
     });
 };
