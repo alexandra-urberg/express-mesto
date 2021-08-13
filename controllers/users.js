@@ -4,64 +4,6 @@ const User = require('../models/users');
 
 const { JWT_SECRET } = process.env;
 
-module.exports.getUsers = (req, res) => {
-  User.find({})
-    .then((users) => res.send({ data: users }))
-    .catch((err) => {
-      res.status(500).send({ message: err.message });
-    });
-};
-
-module.exports.getUser = (req, res) => {
-  const { userId } = req.params;
-  User.findById(userId)
-    .orFail(() => {
-      const error = new Error('Пользователь по заданному id отсутствует');
-      error.statusCode = 404;
-      throw error;
-    })
-    .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.statusCode === 404) {
-        res.status(err.statusCode).send({ message: err.message });
-      } else if (err.kind === 'ObjectId') {
-        res.status(400).send({ message: 'Неверный формат id' });
-      } else {
-        res.status(500).send({ message: 'Error!' });
-      }
-    });
-};
-
-module.exports.login = (req, res) => {
-  const { email, password } = req.body;
-
-  User.findOne({ email }).select('+password')
-    .then((user) => {
-      bcrypt.compare(password, user.password)
-        .then((matched) => {
-          if (!matched) {
-            res.status(401).send({ message: 'uncorrect  password' });
-          } const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
-          res
-            .cookie('jwt', token, {
-              httpOnly: true,
-              sameSite: true,
-              maxAge: 3600000 * 24 * 7,
-            })
-            .end();
-        });
-    })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(400).send({
-          message: 'Поле email или password не должны быть пустыми',
-        });
-      } else {
-        res.status(401).send({ message: 'Неправельный почтовый адресс' });
-      }
-    });
-};
-
 module.exports.createUser = (req, res) => { // signup
   const {
     name,
@@ -91,6 +33,85 @@ module.exports.createUser = (req, res) => { // signup
             res.status(400).send({ message: err.message });
           } res.status(500).send({ message: err.message });
         });
+    });
+};
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+
+  User.findOne({ email }).select('+password')
+    .then((user) => {
+      bcrypt.compare(password, user.password)
+        .then((matched) => {
+          if (!matched) {
+            res.status(401).send({ message: 'uncorrect  password' });
+          } const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
+          res
+            .cookie('jwt', token, {
+              httpOnly: true,
+              sameSite: true,
+              maxAge: 3600000 * 24 * 7,
+            })
+            .status(201).send({
+              message: 'Аутентификация прошла успешно',
+            });
+        });
+    })
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        res.status(400).send({
+          message: 'Поле email или password не должны быть пустыми',
+        });
+      } else {
+        res.status(401).send({ message: 'Неправельный почтовый адресс' });
+      }
+    });
+};
+
+module.exports.getCurrentUser = (req, res) => {
+  User.findById(req.user._id)
+    .orFail(() => {
+      const error = new Error('Пользователь по заданному id отсутствует');
+      error.statusCode = 404;
+      throw error;
+    })
+    .then((user) => res.send({ data: user }))
+    .catch((err) => {
+      if (err.statusCode === 404) {
+        res.status(err.statusCode).send({ message: err.message });
+      } else if (err.kind === 'ObjectId') {
+        res.status(400).send({ message: 'Неверный формат id' });
+      } else {
+        res.status(500).send({ message: 'Error!' });
+      }
+    });
+};
+
+module.exports.getUsers = (req, res) => {
+  User.find({})
+    .then((users) => res.send({ data: users }))
+    .catch((err) => {
+      res.status(500).send({ message: err.message });
+    });
+};
+
+module.exports.getUser = (req, res) => {
+  const { _id } = req.params;
+  User.findById(_id)
+    .orFail(() => {
+      const error = new Error('Пользователь по заданному id отсутствует');
+      error.statusCode = 404;
+      throw error;
+    })
+    .then((user) => res.send({ data: user }))
+    .catch((err) => {
+      if (err.statusCode === 404) {
+        res.status(err.statusCode).send({ message: err.message });
+      } else if (err.kind === 'ObjectId') {
+        res.status(400).send({ message: 'Неверный формат id' });
+      } else {
+        res.status(500).send({ message: 'Error!' });
+      }
     });
 };
 
