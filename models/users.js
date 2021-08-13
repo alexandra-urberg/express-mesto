@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { isURL, isStrongPassword, isEmail } = require('validator');
+const { isURL, isEmail } = require('validator');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -31,16 +31,11 @@ const userSchema = new mongoose.Schema({
       message: 'Неправильный формат почты',
     },
   },
-  passwprd: {
+  password: {
     type: String,
-    required: [true, 'Your username cannot be blank.'],
     minlength: [8, 'Password must be at least 8 characters.'],
-    validate: {
-      validator: (v) => isStrongPassword(v),
-      minlength: false,
-      minSymbols: false,
-      message: 'Ненадежный пароль',
-    },
+    required: [true, 'Your password cannot be blank.'],
+    select: false,
   },
 });
 
