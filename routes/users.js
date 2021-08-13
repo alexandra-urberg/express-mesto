@@ -1,10 +1,10 @@
 const router = require('express').Router(); // роутеры
 const { celebrate, Joi } = require('celebrate'); // валидация
 const {
-  getUsers, getUser, updateUser, updateAvatar, currentUser,
+  getUsers, getUser, updateUser, updateAvatar, getCurrentUser,
 } = require('../controllers/users'); // контроллеры пользователя
 
-router.get('/users/me', currentUser); // запрос на получение данных данного пользователя
+router.get('/users/me', getCurrentUser); // запрос на получение данных данного пользователя
 router.get('/users', getUsers); // запрос на получение данных всех пользователей
 router.get('/users/:_id', celebrate({ // запрос на получение данных  пользователя по id
   params: Joi.object().keys({
