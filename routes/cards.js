@@ -2,7 +2,7 @@ const { celebrate, Joi } = require('celebrate'); // валидация
 const router = require('express').Router(); // роутеры
 const {
   getCards, createCard, deleteCard, likeCard, dislikeCard,
-} = require('../controllers/cards'); // контроллеры карточки
+} = require('../controllers/cards'); // контроллеры карточки.
 
 router.get('/cards', getCards); // запрос на получение всех карточек
 router.post('/cards', celebrate({ // запрос на создае карточки
