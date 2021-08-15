@@ -1,11 +1,13 @@
-require('dotenv').config();
+require('dotenv').config(); // для секретного ключа
 const express = require('express');
-const cookieParser = require('cookie-parser');
+const cookieParser = require('cookie-parser'); // для кукис
 const mongoose = require('mongoose');
-const helmet = require('helmet');
-const { celebrate, Joi, errors } = require('celebrate');
+const helmet = require('helmet'); // помогает защитить экспресс-приложения, устанавливая различные HTTP заголовки
+const { celebrate, Joi, errors } = require('celebrate'); // валидация роутинга
 const { createUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
+const errorsHandler = require('./middlewares/errors'); // для вывовода ошибок
+const NotFoundError = require('./errors/NotFoundError');
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -45,11 +47,12 @@ login);
 app.use('/', auth, require('./routes/users'));
 app.use('/', auth, require('./routes/cards'));
 
-app.use('*', (req, res) => {
-  res.status(404).send({ message: 'Запрашиваемый адрес не найден' });
+app.use('*', (req, res, next) => {
+  next(new NotFoundError('Запрашиваемый адрес не найден'));
 });
 
 app.use(errors());
+app.use(errorsHandler);
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
