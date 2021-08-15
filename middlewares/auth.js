@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const Unauthorized = require('../errors/Unauthorized');
 
-const { JWT_SECRET } = process.env; // секрутный ключ
+const { JWT_SECRET = 'secret-key' } = process.env; // секрутный ключ
 
 module.exports = (req, res, next) => {
   if (!req.cookies.jwt) { // проверка на наличие cookies для попадания в
