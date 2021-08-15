@@ -10,13 +10,6 @@ const cardSchema = new mongoose.Schema({
   link: {
     type: String,
     required: [true, 'Your username cannot be blank.'],
-    validate: {
-      validator: (v) => {
-        const regex = /https?:\/\/[w{3}.]?[\S^а-яё]/gi;
-        return regex.test(v);
-      },
-      message: 'Неправильный формат адресса фотографии',
-    },
   },
   owner: {
     ref: 'user',
