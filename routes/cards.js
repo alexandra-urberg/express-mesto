@@ -9,7 +9,7 @@ router.post('/cards', celebrate({ // запрос на создае карточ
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
     // eslint-disable-next-line
-    link: Joi.string().pattern(new RegExp('/^(https?|chrome):\/\/[^\s$.?#].[^\s]*$/gm')),
+    link: Joi.string(),
   }),
 }),
 createCard);
