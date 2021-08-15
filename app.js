@@ -1,6 +1,7 @@
 require('dotenv').config(); // для секретного ключа
 const express = require('express');
 const cookieParser = require('cookie-parser'); // для кукис
+const rateLimit = require('express-rate-limit'); // защиты от DDoS-атак
 const mongoose = require('mongoose');
 const helmet = require('helmet'); // помогает защитить экспресс-приложения, устанавливая различные HTTP заголовки
 const { celebrate, Joi, errors } = require('celebrate'); // валидация роутинга
@@ -11,8 +12,14 @@ const NotFoundError = require('./errors/NotFoundError');
 
 const { PORT = 3000 } = process.env;
 const app = express();
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+});
+
 app.use(helmet());
 app.use(cookieParser());
+app.use(limiter);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
