@@ -6,7 +6,7 @@ const Conflict = require('../errors/Conflict');
 const NotFoundError = require('../errors/NotFoundError');
 const Unauthorized = require('../errors/Unauthorized');
 
-const { JWT_SECRET } = process.env;
+const { JWT_SECRET = 'secret-key' } = process.env;
 
 module.exports.createUser = (req, res, next) => { // signup
   const {
@@ -72,11 +72,12 @@ module.exports.login = (req, res, next) => { // signin
 
 module.exports.getCurrentUser = (req, res, next) => { // получаем информацию о себе
   User.findById(req.user._id)
+    .orFail(() => {
+      throw next(new NotFoundError('Пользователь по заданному id отсутствует'));
+    })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.statusCode === 404) {
-        next(new NotFoundError('Пользователь по заданному id отсутствует'));
-      } else if (err.kind === 'ObjectId') {
+      if (err.kind === 'ObjectId') {
         next(new BadRequest('Неверный формат id'));
       } next(err);
     });
@@ -93,11 +94,10 @@ module.exports.getUsers = (req, res, next) => { // получаем информ
 module.exports.getUser = (req, res, next) => {
   const { _id } = req.params;
   User.findById(_id)
-    .then((user) => {
-      if (!user) {
-        next(new NotFoundError('Пользователь по заданному id отсутствует'));
-      } res.send({ data: user });
+    .orFail(() => {
+      throw next(new NotFoundError('Пользователь по заданному id отсутствует'));
     })
+    .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.kind === 'ObjectId') {
         next(new BadRequest('Неверный формат id'));
@@ -117,11 +117,12 @@ module.exports.updateUser = (req, res, next) => {
       runValidators: true,
     },
   )
+    .orFail(() => {
+      throw next(new NotFoundError('Пользователь по заданному id отсутствует'));
+    })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.statusCode === 404) {
-        next(new NotFoundError('Пользователь по заданному id отсутствует'));
-      } else if (err.name === 'ValidationError') {
+      if (err.name === 'ValidationError') {
         next(new BadRequest('Оба поля должны быть заполненны!'));
       } else {
         next(err);
@@ -139,11 +140,12 @@ module.exports.updateAvatar = (req, res, next) => {
       runValidators: true,
     },
   )
+    .orFail(() => {
+      throw next(new NotFoundError('Пользователь по заданному id отсутствует'));
+    })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.statusCode === 404) {
-        next(new NotFoundError('Пользователь по заданному id отсутствует'));
-      } else if (err.name === 'ValidationError') {
+      if (err.name === 'ValidationError') {
         next(new BadRequest('Поле должно быть заполнено, либо Вы внесли некоректный адресс фотографии'));
       } else {
         next(err);
