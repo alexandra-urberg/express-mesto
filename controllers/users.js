@@ -1,10 +1,14 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs'); // для хеширования пароля
+const jwt = require('jsonwebtoken'); // для создания токина
 const User = require('../models/users');
+const BadRequest = require('../errors/BadRequest');
+const Conflict = require('../errors/Conflict');
+const NotFoundError = require('../errors/NotFoundError');
+const Unauthorized = require('../errors/Unauthorized');
 
 const { JWT_SECRET } = process.env;
 
-module.exports.createUser = (req, res) => { // signup
+module.exports.createUser = (req, res, next) => { // signup
   const {
     name,
     about,
@@ -15,8 +19,8 @@ module.exports.createUser = (req, res) => { // signup
   User.findOne({ email })
     .then((user) => {
       if (user) {
-        res.status(403).send({ message: 'Подльзователь с такой почтой уже существует' });
-      } bcrypt.hash(password, 10)
+        next(new Conflict('Подльзователь с такой почтой уже существует!'));
+      } bcrypt.hash(password, 10) // хешируем пароль
         .then((hash) => User.create({
           name,
           about,
@@ -28,15 +32,15 @@ module.exports.createUser = (req, res) => { // signup
           _id: usr._id,
           email: usr.email,
         }))
-        .catch((err) => {
-          if (err.name === 'ValidationError') {
-            res.status(400).send({ message: err.message });
-          } res.status(500).send({ message: err.message });
+        .catch((error) => {
+          if (error.name === 'ValidationError') {
+            next(new BadRequest('Поле email и password должны быть обязательно заполненны'));
+          } next(error);
         });
     });
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => { // signin
   const { email, password } = req.body;
 
   User.findOne({ email }).select('+password')
@@ -44,10 +48,10 @@ module.exports.login = (req, res) => {
       bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
-            res.status(401).send({ message: 'uncorrect  password' });
-          } const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' });
+            next(new Unauthorized('Передан неккоректный пароль'));
+          } const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: '7d' }); // создаем токен
           res
-            .cookie('jwt', token, {
+            .cookie('jwt', token, { // создаем куки при правильной аутентификации
               httpOnly: true,
               sameSite: true,
               maxAge: 3600000 * 24 * 7,
@@ -59,63 +63,51 @@ module.exports.login = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(400).send({
-          message: 'Поле email или password не должны быть пустыми',
-        });
+        next(new BadRequest('Поле email или password не должны быть пустыми'));
       } else {
-        res.status(401).send({ message: 'Неправельный почтовый адресс' });
-      }
+        next(new Unauthorized('Передан неккоректный email'));
+      } next(err);
     });
 };
 
-module.exports.getCurrentUser = (req, res) => {
+module.exports.getCurrentUser = (req, res, next) => { // получаем информацию о себе
   User.findById(req.user._id)
-    .orFail(() => {
-      const error = new Error('Пользователь по заданному id отсутствует');
-      error.statusCode = 404;
-      throw error;
-    })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.statusCode === 404) {
-        res.status(err.statusCode).send({ message: err.message });
+        next(new NotFoundError('Пользователь по заданному id отсутствует'));
       } else if (err.kind === 'ObjectId') {
-        res.status(400).send({ message: 'Неверный формат id' });
-      } else {
-        res.status(500).send({ message: 'Error!' });
-      }
+        next(new BadRequest('Неверный формат id'));
+      } next(err);
     });
 };
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => { // получаем информацию о всех пользователях
   User.find({})
     .then((users) => res.send({ data: users }))
     .catch((err) => {
-      res.status(500).send({ message: err.message });
+      next(err);
     });
 };
 
-module.exports.getUser = (req, res) => {
+module.exports.getUser = (req, res, next) => {
   const { _id } = req.params;
   User.findById(_id)
-    .orFail(() => {
-      const error = new Error('Пользователь по заданному id отсутствует');
-      error.statusCode = 404;
-      throw error;
+    .then((user) => {
+      if (!user) {
+        next(new NotFoundError('Пользователь по заданному id отсутствует'));
+      } res.send({ data: user });
     })
-    .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.statusCode === 404) {
-        res.status(err.statusCode).send({ message: err.message });
-      } else if (err.kind === 'ObjectId') {
-        res.status(400).send({ message: 'Неверный формат id' });
+      if (err.kind === 'ObjectId') {
+        next(new BadRequest('Неверный формат id'));
       } else {
-        res.status(500).send({ message: 'Error!' });
+        next(err);
       }
     });
 };
 
-module.exports.updateUser = (req, res) => {
+module.exports.updateUser = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
@@ -125,24 +117,19 @@ module.exports.updateUser = (req, res) => {
       runValidators: true,
     },
   )
-    .orFail(() => {
-      const error = new Error('Пользователь по заданному id отсутствует');
-      error.statusCode = 404;
-      throw error;
-    })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.statusCode === 404) {
-        res.status(err.statusCode).send({ message: err.message });
+        next(new NotFoundError('Пользователь по заданному id отсутствует'));
       } else if (err.name === 'ValidationError') {
-        res.status(400).send({ message: err.message });
+        next(new BadRequest('Оба поля должны быть заполненны!'));
       } else {
-        res.status(500).send({ message: 'Error!' });
+        next(err);
       }
     });
 };
 
-module.exports.updateAvatar = (req, res) => {
+module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
@@ -152,21 +139,14 @@ module.exports.updateAvatar = (req, res) => {
       runValidators: true,
     },
   )
-    .orFail(() => {
-      const error = new Error('Пользователь по заданному id отсутствует');
-      error.statusCode = 404;
-      throw error;
-    })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.statusCode === 404) {
-        res.status(err.statusCode).send({ message: err.message });
+        next(new NotFoundError('Пользователь по заданному id отсутствует'));
       } else if (err.name === 'ValidationError') {
-        res.status(400).send({
-          message: err.message,
-        });
+        next(new BadRequest('Поле должно быть заполнено, либо Вы внесли некоректный адресс фотографии'));
       } else {
-        res.status(500).send({ message: 'Error!' });
+        next(err);
       }
     });
 };
