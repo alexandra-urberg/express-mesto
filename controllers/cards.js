@@ -24,12 +24,11 @@ module.exports.createCard = (req, res, next) => { // создаем карточ
 
 module.exports.deleteCard = (req, res, next) => { // удаляем только свою карточку
   const owner = req.user._id;
-  // console.log(owner);
   Card.findById(req.params.cardId)
+    .orFail(() => {
+      throw next(new NotFound('Карточка по заданному id отсутствует'));
+    })
     .then((card) => {
-      // console.log(card.owner);
-      // console.log(String(card.owner));
-      // console.log(owner);
       if (String(card.owner) === owner) {
         card.remove();
         res.send({ message: 'Карточка успешно удалена' });
@@ -38,9 +37,7 @@ module.exports.deleteCard = (req, res, next) => { // удаляем только
       }
     })
     .catch((err) => {
-      if (err.statusCode === 404) {
-        next(new NotFound('Карточка по заданному id отсутствует'));
-      } else if (err.name === 'CastError') {
+      if (err.name === 'CastError') {
         next(new BadRequest('Переданы некорректные данные'));
       } next(err);
     });
@@ -52,6 +49,9 @@ module.exports.likeCard = (req, res, next) => { // постановка лайк
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true },
   )
+    .orFail(new Error(
+      'NotFound',
+    ))
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -68,6 +68,9 @@ module.exports.dislikeCard = (req, res, next) => { // удаляем лайк
     { $pull: { likes: req.user._id } }, // убрать _id из массива
     { new: true },
   )
+    .orFail(new Error(
+      'NotFound',
+    ))
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'CastError') {
