@@ -25,16 +25,16 @@
     "cookie-parser": "^1.4.5",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
-    "express-rate-limit": "^5.3.0",
+    "express-rate-limit": "^5.5.0",
     "helmet": "^4.6.0",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^5.13.5",
+    "mongoose": "^6.0.11",
     "validator": "^13.6.0"
   },
   "devDependencies": {
-    "eslint": "~7.32.0",
+    "eslint": "~8.0.1",
     "eslint-config-airbnb-base": "~14.2.1",
-    "eslint-plugin-import": "~2.23.4",
-    "nodemon": "2.0.12"
+    "eslint-plugin-import": "~2.25.2",
+    "nodemon": "2.0.13"
   }
 }
