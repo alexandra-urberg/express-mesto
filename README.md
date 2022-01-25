@@ -1,31 +1,28 @@
-# Проект 13-14 Mesto бэкенд
+# Express-mesto (13-14 sprints)
+The project was prepared, as backend for [Mesto-React-auth](https://github.com/alexandra-stepanova/react-mesto-auth).
 
-24 поток
+The backend built to registrate and authorized users, update users information, add/delete image, add/delete like.
 
-Выполнила: Степанова А.А.
+**The following stack was used during development of the project:**
+1. NodeJs
+2. Express
+3. Mongo DB
+4. Nodemon
+5. Mongoose
 
-### Обзор
 
-Данный проект разработан, как бэкенд для предыдущего фронтенд проекта [Mesto-React-auth](https://github.com/alexandra-stepanova/react-mesto-auth). 
-
-В данном проетке используется:
-1. nodejs
-2. express
-3. mongo DB
-4. nodemon
-5. mongoose
-
-Защита создана с помощью:
+**The protection is built up utilizing the following:**
 1. helmet
 2. cookies
 3. .env(secret-key)
 4. express Rate Limit
 
-В данном проекте есть регистрация, авторизация, аутентификация и валидация input.
+Startup commands
 
-Основные технологии используемые в данном проекте:
+To start the server
+`npm run start`
+or
+`npm run dev`
 
-## Запуск проекта
 
-`npm run start` — запускает сервер   
-`npm run dev` — запускает сервер с hot-reload
+Prepared by Alexandra Stepanova
