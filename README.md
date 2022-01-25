@@ -17,12 +17,16 @@ The backend built to registrate and authorized users, update users information, 
 3. .env(secret-key)
 4. express Rate Limit
 
-Startup commands
+**Startup commands:**
 
 To start the server
-`npm run start`
-or
-`npm run dev`
+```sh
+npm run start
+```
+or 
+```sh
+npm run dev
+```
 
 
 Prepared by Alexandra Stepanova
