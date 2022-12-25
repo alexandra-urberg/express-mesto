@@ -27,7 +27,6 @@
     "express": "^4.17.3",
     "express-rate-limit": "^5.5.0",
     "helmet": "^4.6.0",
-    "jsonwebtoken": "^8.5.1",
     "validator": "^13.7.0",
     "mongoose": ">=5.13.15"
   },
@@ -35,6 +34,7 @@
     "eslint": "~8.0.1",
     "eslint-config-airbnb-base": "~14.2.1",
     "eslint-plugin-import": "~2.25.2",
-    "nodemon": "2.0.13"
+    "nodemon": "2.0.13",
+    "jsonwebtoken": ">=9.0.0"
   }
 }
