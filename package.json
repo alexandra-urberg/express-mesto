@@ -28,7 +28,7 @@
     "express-rate-limit": "^5.5.0",
     "helmet": "^4.6.0",
     "validator": "^13.7.0",
-    "mongoose": ">=5.13.20"
+    "mongoose": ">=6.13.5"
   },
   "devDependencies": {
     "eslint": "~8.0.1",
